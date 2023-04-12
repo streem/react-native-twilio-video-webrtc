@@ -22,6 +22,10 @@ const propTypes = {
 }
 
 class TwilioVideoPreview extends React.Component {
+  captureFrame() {
+    return NativeTwilioVideoPreview.captureFrame();
+  }
+
   render () {
     return <NativeTwilioVideoPreview {...this.props} />
   }

@@ -23,6 +23,10 @@ class TwilioVideoLocalView extends Component {
     scaleType: PropTypes.oneOf(['fit', 'fill'])
   }
 
+  captureFrame() {
+    return NativeTwilioVideoPreview.captureFrame();
+  }
+
   render () {
     const scalesType = this.props.scaleType === 'fit' ? 1 : 2
     return (

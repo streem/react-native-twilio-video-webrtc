@@ -44,6 +44,11 @@ public class TwilioVideoPreviewManager extends SimpleViewManager<TwilioVideoPrev
       view.applyZOrder(applyZOrder);
     }
 
+    @ReactMethod
+    public void captureFrame(Promise promise) {
+      captureFrame(promise);
+    }
+
     @Override
     @Nullable
     public Map getExportedCustomDirectEventTypeConstants() {

@@ -8,9 +8,9 @@ PODS:
   - glog (0.3.4)
   - React (0.59.9):
     - React/Core (= 0.59.9)
-  - react-native-twilio-video-webrtc (2.0.0):
+  - react-native-twilio-video-webrtc (3.1.0):
     - React
-    - TwilioVideo (~> 4.1)
+    - TwilioVideo (~> 4.6)
   - React/Core (0.59.9):
     - yoga (= 0.59.9.React)
   - React/CxxBridge (0.59.9):
@@ -35,7 +35,7 @@ PODS:
     - React/cxxreact
     - React/jsi
   - React/jsinspector (0.59.9)
-  - TwilioVideo (4.1.0)
+  - TwilioVideo (4.6.3)
   - yoga (0.59.9.React)
 
 DEPENDENCIES:
@@ -68,10 +68,10 @@ SPEC CHECKSUMS:
   Folly: de497beb10f102453a1afa9edbf8cf8a251890de
   glog: 1de0bb937dccdc981596d3b5825ebfb765017ded
   React: a86b92f00edbe1873a63e4a212c29b7a7ad5224f
-  react-native-twilio-video-webrtc: 5b40ee0129687cb89fb5055680aed35c8db4be07
-  TwilioVideo: 17bfe3dcac945c6c1235c4584dc37e07a28ccb61
+  react-native-twilio-video-webrtc: e2a899018ce860eb8dd703bd51d82903517f47b7
+  TwilioVideo: 4afaac028c5886f2f3b313a9fcc146a6b7ca34e2
   yoga: 03ff42a6f223fb88deeaed60249020d80c3091ee
 
 PODFILE CHECKSUM: a22eec28b45c6a20b9c752a17cdef0f608e13c10
 
-COCOAPODS: 1.10.0
+COCOAPODS: 1.11.3

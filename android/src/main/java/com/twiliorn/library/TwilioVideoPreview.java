@@ -8,6 +8,7 @@
 package com.twiliorn.library;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.bridge.Promise;
 
 public class TwilioVideoPreview extends RNVideoViewGroup {
 

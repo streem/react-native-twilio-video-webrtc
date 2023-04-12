@@ -123,6 +123,68 @@ RCT_EXPORT_MODULE();
   [self updateLocalViewMirroring:view];
 }
 
+- (void)captureLocalFrame() {
+  // Set up the AVCaptureSession
+  AVCaptureSession *captureSession = [[AVCaptureSession alloc] init];
+  captureSession.sessionPreset = AVCaptureSessionPresetPhoto;
+
+  // Set up the AVCaptureDevice
+  AVCaptureDevice *captureDevice;
+  if ([cameraType isEqualToString:@"back"]) {
+    captureDevice = [TVICameraSource captureDeviceForPosition:AVCaptureDevicePositionBack];
+  } else {
+    captureDevice = [TVICameraSource captureDeviceForPosition:AVCaptureDevicePositionFront];
+  }
+  NSError *error;
+  AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:captureDevice error:&error];
+  if (input) {
+    [captureSession addInput:input];
+  } else {
+    NSLog(@"Error setting up capture device input: %@", error.localizedDescription);
+    return;
+  }
+
+  // Set up the AVCapturePhotoOutput
+  AVCapturePhotoOutput *photoOutput = [[AVCapturePhotoOutput alloc] init];
+  [photoOutput setHighResolutionCaptureEnabled:YES];
+  if ([captureSession canAddOutput:photoOutput]) {
+    [captureSession addOutput:photoOutput];
+  } else {
+    NSLog(@"Error adding capture photo output");
+    return;
+  }
+
+  // Start the capture session
+  [captureSession startRunning];
+
+  // Capture a photo
+  AVCapturePhotoSettings *photoSettings = [AVCapturePhotoSettings photoSettings];
+  [photoOutput capturePhotoWithSettings:photoSettings delegate:self];
+}
+
+// Implement the AVCapturePhotoCaptureDelegate to receive the captured photo
+- (void)captureOutput:(AVCapturePhotoOutput *)output didFinishProcessingPhoto:(AVCapturePhoto *)photo error:(NSError *)error {
+  if (error) {
+    NSLog(@"Error capturing photo: %@", error.localizedDescription);
+    return;
+  }
+
+  // Get the captured photo data
+  NSData *photoData = [photo fileDataRepresentation];
+
+  // Save the photo data to a temporary file
+  NSString *tempFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"capturedImage.jpg"];
+  BOOL success = [photoData writeToFile:tempFilePath atomically:YES];
+  if (success) {
+    // Return the file path as a string to JavaScript
+    NSString *fileUrl = [NSString stringWithFormat:@"file://%@", tempFilePath];
+    NSLog(@"File path: %@", fileUrl);
+    // You can now pass the fileUrl string back to JavaScript to further process or display the image as needed
+  } else {
+    NSLog(@"Error saving captured image to file");
+  }
+}
+
 - (void)updateLocalViewMirroring:(TVIVideoView *)view {
   if (self.camera && self.camera.device.position == AVCaptureDevicePositionFront) {
     view.mirror = true;
