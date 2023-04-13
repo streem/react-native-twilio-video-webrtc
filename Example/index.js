@@ -30,6 +30,7 @@ const Example = (props) => {
   const [videoTracks, setVideoTracks] = useState(new Map());
   const [token, setToken] = useState("");
   const twilioVideo = useRef(null);
+  const localVideo = useRef(null);
 
   const _onConnectButtonPress = async () => {
     if (Platform.OS === "android") {
@@ -58,6 +59,11 @@ const Example = (props) => {
     twilioVideo.current.toggleScreenSharing(!isSharing);
     setIsSharing(!isSharing);
   };
+
+  const _onCaptureFrameButtonPressed = async () => {
+    const frame = await localVideo.current.captureFrame();
+    console.log("Captured frame: ", frame);
+  }
 
   const _onFlipButtonPress = () => {
     twilioVideo.current.flipCamera();
@@ -208,7 +214,13 @@ const Example = (props) => {
                 {isSharing ? "Stop Sharing" : "Start Sharing"}
               </Text>
             </TouchableOpacity>
-            <TwilioVideoLocalView enabled={true} style={styles.localVideo} />
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={_onCaptureFrameButtonPressed}
+            >
+              <Text style={{ fontSize: 12 }}>Capture Frame</Text>
+            </TouchableOpacity>
+            <TwilioVideoLocalView enabled={true} style={styles.localVideo} ref={localVideo} />
           </View>
         </View>
       )}

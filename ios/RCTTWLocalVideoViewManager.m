@@ -42,7 +42,7 @@ RCT_CUSTOM_VIEW_PROPERTY(enabled, BOOL, TVIVideoView) {
   }
 }
 
-RCT_EXPORT_METHOD(captureFrame resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(captureFrame:resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   RCTTWVideoModule *videoModule = [self.bridge moduleForName:@"TWVideoModule"];
   [videoModule captureLocalFrame:^(UIImage *image) {
     resolve(image);
