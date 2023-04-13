@@ -180,7 +180,9 @@ declare module "react-native-twilio-video-webrtc" {
 
   class TwilioVideoLocalView extends React.Component<
     TwilioVideoLocalViewProps
-  > {}
+  > {
+    captureFrame: () => Promise<string>;
+  }
 
   class TwilioVideoParticipantView extends React.Component<
     TwilioVideoParticipantViewProps

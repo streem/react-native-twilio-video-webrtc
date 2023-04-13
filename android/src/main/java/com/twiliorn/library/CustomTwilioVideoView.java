@@ -334,6 +334,17 @@ public class CustomTwilioVideoView extends View implements LifecycleEventListene
         return true;
     }
 
+    private void captureFrame(Promise promise) {
+        cameraCapturer.onFrameCaptured(VideoFrame frame);
+        // Convert YUV frame to JPG
+        byte[] data = frame.getBuffer().array();
+        YuvImage yuvImage = new YuvImage(data, ImageFormat.NV21, frame.getSize().getWidth(), frame.getSize().getHeight(), null);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        yuvImage.compressToJpeg(new Rect(0, 0, frame.getSize().getWidth(), frame.getSize().getHeight()), 100, byteArrayOutputStream);
+        byte[] jpegArray = byteArrayOutputStream.toByteArray();
+        promise.resolve(Base64.encodeToString(jpegArray, Base64.DEFAULT));
+    }
+
     // ===== LIFECYCLE EVENTS ======================================================================
 
 
