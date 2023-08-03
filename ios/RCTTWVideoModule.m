@@ -166,7 +166,7 @@ RCT_EXPORT_METHOD(setRemoteAudioPlayback:(NSString *)participantSid enabled:(BOO
     }
 }
 
-RCT_EXPORT_METHOD(startLocalVideo) {
+RCT_EXPORT_METHOD(startLocalVideo:(NSString *)videoTrackName) {
   TVICameraSourceOptions *options = [TVICameraSourceOptions optionsWithBlock:^(TVICameraSourceOptionsBuilder * _Nonnull builder) {
 
   }];
@@ -174,6 +174,8 @@ RCT_EXPORT_METHOD(startLocalVideo) {
   if (self.camera == nil) {
       return;
   }
+
+  this.customVideoTrackName = videoTrackName;
   if (self.customVideoTrackName != nil) {
     self.localVideoTrack = [TVILocalVideoTrack trackWithSource:self.camera enabled:NO name:self.customVideoTrackName];
   } else {
