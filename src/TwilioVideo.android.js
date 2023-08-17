@@ -229,8 +229,8 @@ class CustomTwilioVideoView extends Component {
     this.runCommand(nativeEvents.switchCamera, []);
   }
 
-  setLocalVideoEnabled(enabled, videoTrackName) {
-    this.runCommand(nativeEvents.toggleVideo, [enabled, videoTrackName]);
+  setLocalVideoEnabled(enabled, videoTrackName, cameraType = "front") {
+    this.runCommand(nativeEvents.toggleVideo, [enabled, videoTrackName, cameraType]);
     return Promise.resolve(enabled);
   }
 

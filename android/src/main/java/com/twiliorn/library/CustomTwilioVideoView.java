@@ -714,12 +714,11 @@ public class CustomTwilioVideoView extends View implements LifecycleEventListene
         }
     }
 
-    public void toggleVideo(boolean enabled, String videoTrackName) {
+    public void toggleVideo(boolean enabled, String videoTrackName, String cameraType) {
 
         if (cameraCapturer == null && enabled) {
-            this.customVideoTrackName = videoTrackName;
             String fallbackCameraType = cameraType == null ? CustomTwilioVideoView.FRONT_CAMERA_TYPE : cameraType;
-            boolean createVideoStatus = createLocalVideo(true, fallbackCameraType, this.customVideoTrackName);
+            boolean createVideoStatus = createLocalVideo(true, fallbackCameraType, videoTrackName);
             if (!createVideoStatus) {
                 Log.d("RNTwilioVideo", "Failed to create local video");
                 return;

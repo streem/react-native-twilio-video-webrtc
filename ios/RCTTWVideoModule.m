@@ -266,13 +266,25 @@ RCT_REMAP_METHOD(setLocalAudioEnabled, enabled:(BOOL)enabled setLocalAudioEnable
           }
           return enabled;
       }
+  } else {
+    [self startLocalVideo: self.customVideoTrackName]
+    [self.localVideoTrack setEnabled:enabled];
+      if (self.camera) {
+          if (enabled) {
+            [self startCameraCapture:cameraType];
+          } else {
+            [self clearCameraInstance];
+          }
+          return enabled;
+      }
   }
   return false;
 }
 
-RCT_REMAP_METHOD(setLocalVideoEnabled, enabled:(BOOL)enabled setLocalVideoEnabledWithResolver:(RCTPromiseResolveBlock)resolve
+RCT_REMAP_METHOD(setLocalVideoEnabled, enabled:(BOOL)enabled videoTrackName:(NSString *)videoTrackName cameraType:(NSString *)cameraType setLocalVideoEnabledWithResolver:(RCTPromiseResolveBlock)resolve
                  rejecter:(RCTPromiseRejectBlock)reject) {
-  bool result = [self _setLocalVideoEnabled:enabled];
+  self.customVideoTrackName = videoTrackName;
+  bool result = [self _setLocalVideoEnabled:enabled cameraType:cameraType];
   resolve(@(result));
 }
 

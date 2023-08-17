@@ -164,7 +164,7 @@ declare module "react-native-twilio-video-webrtc" {
   };
 
   class TwilioVideo extends React.Component<TwilioVideoProps> {
-    setLocalVideoEnabled: (enabled: boolean, videoTrackName?: string) => Promise<boolean>;
+    setLocalVideoEnabled: (enabled: boolean, videoTrackName?: string, cameraType?: cameraType) => Promise<boolean>;
     setLocalAudioEnabled: (enabled: boolean) => Promise<boolean>;
     setRemoteAudioEnabled: (enabled: boolean) => Promise<boolean>;
     setBluetoothHeadsetConnected: (enabled: boolean) => Promise<boolean>;
