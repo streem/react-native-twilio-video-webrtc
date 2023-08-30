@@ -490,7 +490,7 @@ public class CustomTwilioVideoView extends View implements LifecycleEventListene
     }
 
     public void connectToRoom() {
-        Log.d("RNTwilioVideo", "connectToRoom: ST-3629 test, updated log message");
+        Log.d("RNTwilioVideo", "connectToRoom: ST-3629 test, updated log message version 3.2.3");
 
         /*
          * Create a VideoClient allowing you to connect to a Room
