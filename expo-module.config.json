@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["TWVideoModule"]
+  },
+  "android": {
+    "modules": ["com.twiliorn.library.TwilioPackage"]
+  }
+}
