@@ -15,9 +15,8 @@
 
 @implementation RCTTWFrameCaptureRenderer
 
-- (void)captureFrame:(NSString *)filename {
-    NSLog(@"[RNTwilioVideo] capturing the frame with filename %@", filename);
-    self.filename = filename;
+- (void)captureFrame{
+    NSLog(@"[RNTwilioVideo] capturing the frame");
     self.captureThisFrame = TRUE;
 }
 
@@ -32,7 +31,7 @@
     
     // save frame on background thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self saveFrame:frame filename:self.filename];
+        [self saveFrame:frame];
     });
 }
 
@@ -52,21 +51,23 @@
     }
 }
 
-- (void)saveFrame:(TVIVideoFrame *)frame filename:(NSString *)filename {
+- (void)saveFrame:(TVIVideoFrame *)frame {
     // do frame image conversion and save to file system
     CIImage *ciImg = [CIImage imageWithCVImageBuffer:frame.imageBuffer];
     UIImage *rawImg = [UIImage imageWithCIImage:ciImg];
     UIImage *img = [rawImg rotate: [self getDegrees:frame.orientation]]; // rotate by desired frame orientation
     NSData *imageData = UIImageJPEGRepresentation(img, 90);
     NSURL *url = [NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].firstObject;
-    NSString *filePath = [NSString stringWithFormat:@"%@.jpeg", filename];
-    url = [url URLByAppendingPathComponent:filePath];
+    NSUUID *uuid = [NSUUID UUID];
+    NSString *fileId = [uuid UUIDString];
+    NSString *filename = [NSString stringWithFormat:@"rntframe-%@.jpeg", fileId];
+    url = [url URLByAppendingPathComponent:filename];
     BOOL didSave = [imageData writeToFile:url.path atomically:TRUE];
     NSLog(@"[RNTwilioVideo] saving frame at path %@ was success: %@", url.path, didSave ? @"YES" : @"NO");
 
     // emit onFrameCaptured event to notification center (video module will then emit event to JS)
     NSNotificationCenter *notiCenter = NSNotificationCenter.defaultCenter;
-    [notiCenter postNotificationName:@"onFrameCaptured" object:self userInfo:@{@"filename": filePath}];
+    [notiCenter postNotificationName:@"onFrameCaptured" object:self userInfo:@{@"filename": filename}];
 }
 
 

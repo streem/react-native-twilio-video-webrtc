@@ -215,7 +215,7 @@ declare module 'react-native-twilio-video-webrtc' {
      *
      * `import { DeviceEventEmitter } from 'react-native';`
      */
-    captureFrame: (filename: string) => void;
+    captureFrame: () => void;
   }
 
   class TwilioVideoLocalView extends React.Component<TwilioVideoLocalViewProps> {}

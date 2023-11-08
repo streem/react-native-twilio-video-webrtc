@@ -21,18 +21,15 @@ public class CustomVideoProcessor implements VideoProcessor {
     private final AtomicBoolean canCapture = new AtomicBoolean(false);
     private final AtomicBoolean captureThisFrame = new AtomicBoolean(false);
     private PatchedVideoView videoView;
-    // TODO: FIX THIS. ITS A POTENTIAL MEMORY LEAK.
     private Context context;
     // choosing to use single thread since limited i/o resources may be a bottleneck anyways
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private String filename = "";
 
     public CustomVideoProcessor() {}
 
-    public void captureFrame(String filename) {
+    public void captureFrame() {
         if (canCapture.get()) {
-            this.filename = filename;
-            Log.d(TwilioPackage.TAG, "Setting captureThisFrame flag to true for file " + filename);
+            Log.d(TwilioPackage.TAG, "Setting captureThisFrame flag to true.");
             captureThisFrame.set(true);
         }
         else {
@@ -60,7 +57,7 @@ public class CustomVideoProcessor implements VideoProcessor {
             Log.d(TwilioPackage.TAG, "Capturing frame on background thread.");
             // save frame on background thread
             executorService.execute(() -> {
-                Utils.saveVideoFrame(frame, context, this.filename);
+                Utils.saveVideoFrame(frame, context);
             });
         }
 
@@ -83,6 +80,7 @@ public class CustomVideoProcessor implements VideoProcessor {
 
     @Override
     public void onCapturerStopped() {
+
         canCapture.set(false);
         captureThisFrame.set(false);
     }

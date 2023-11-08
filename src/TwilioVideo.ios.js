@@ -337,8 +337,8 @@ export default class TwilioVideo extends Component {
     TWVideoModule.sendString(message);
   }
 
-  captureFrame(filename) {
-    TWVideoModule.captureFrame(filename);
+  captureFrame() {
+    TWVideoModule.captureFrame();
   }
 
   _setLocalVideoTrackName(name) {
