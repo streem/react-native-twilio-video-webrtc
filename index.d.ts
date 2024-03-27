@@ -96,7 +96,10 @@ declare module 'react-native-twilio-video-webrtc' {
     p: NetworkLevelChangeEventArgs,
   ) => void;
 
-  export type FlashlightStatusChanged = (status: boolean, error?: string) => void;
+  export type FlashlightStatusChanged = (
+    status: boolean,
+    error?: string,
+  ) => void;
 
   export type DominantSpeakerChangedEventArgs = RoomEventCommonArgs & {
     participant: Participant;
@@ -220,6 +223,11 @@ declare module 'react-native-twilio-video-webrtc' {
      * `import { DeviceEventEmitter } from 'react-native';`
      */
     captureFrame: (filename: string) => void;
+
+    streemFlipCamera: (
+      localVideoTrackName: string,
+      cameraType: cameraType,
+    ) => Promise<void>;
   }
 
   class TwilioVideoLocalView extends React.Component<TwilioVideoLocalViewProps> {}

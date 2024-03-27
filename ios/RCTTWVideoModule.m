@@ -11,6 +11,9 @@
 #import "RCTTWSerializable.h"
 #import "RCTTWFrameCaptureRenderer.h"
 
+typedef void (^ CompleteBlock)(NSError*);
+typedef void (^LocalBlock)(void);
+
 static NSString* roomDidConnect               = @"roomDidConnect";
 static NSString* roomDidDisconnect            = @"roomDidDisconnect";
 static NSString* roomDidFailToConnect         = @"roomDidFailToConnect";
@@ -77,7 +80,9 @@ TVIVideoFormat *RCTTWVideoModuleCameraSourceSelectVideoFormatBySize(AVCaptureDev
 @property (strong, nonatomic) TVIRoom *room;
 @property (strong, nonatomic) NSString *videoTrackName;
 @property (nonatomic) BOOL listening;
+@property (nonatomic) BOOL isCameraActive;
 @property (strong, nonatomic) RCTTWFrameCaptureRenderer *captureRenderer;
+@property (strong, nonatomic) TVIVideoView *videoView;
 
 @end
 
@@ -89,6 +94,7 @@ RCT_EXPORT_MODULE();
 
 - (void)dealloc {
   [self clearCameraInstance];
+    self.videoView = nil;
 }
 
 - (dispatch_queue_t)methodQueue {
@@ -126,12 +132,21 @@ RCT_EXPORT_MODULE();
   ];
 }
 
+- (void)attachRenderers {
+    NSLog(@"Attaching renderers");
+    
+    [self.localVideoTrack addRenderer:self.videoView];
+    
+    // NOTE: this is where add renderer for capturing frames!
+    self.captureRenderer = [[RCTTWFrameCaptureRenderer alloc]init];
+    [self.localVideoTrack addRenderer:self.captureRenderer];
+}
+
 - (void)addLocalView:(TVIVideoView *)view {
+    self.videoView = view;
+    
     if (self.localVideoTrack != nil) {
-        self.captureRenderer = [[RCTTWFrameCaptureRenderer alloc]init];
-        [self.localVideoTrack addRenderer:view];
-        // NOTE: this is where add renderer for capturing frames!
-        [self.localVideoTrack addRenderer:self.captureRenderer];
+        [self attachRenderers];
     }
     [self updateLocalViewMirroring:view];
     
@@ -148,8 +163,9 @@ RCT_EXPORT_MODULE();
 
 - (void)removeLocalView:(TVIVideoView *)view {
     if (self.localVideoTrack != nil) {
-        [self.localVideoTrack removeRenderer:view];
-        [self.localVideoTrack removeRenderer:self.captureRenderer];
+        for (TVIVideoView *renderer in self.localVideoTrack.renderers) {
+            [self.localVideoTrack removeRenderer:renderer];
+        }
     }
     
     // remove notification center listener for frame captured events
@@ -228,7 +244,7 @@ RCT_EXPORT_METHOD(startLocalVideo) {
   }
 }
 
-- (void)startCameraCapture:(NSString *)cameraType {
+- (void)startCameraCapture:(NSString *)cameraType onComplete:(CompleteBlock)onComplete {
   if (self.camera == nil) {
     NSLog(@"[RNTwilioVideo] No camera...");
     return;
@@ -253,6 +269,7 @@ RCT_EXPORT_METHOD(startLocalVideo) {
           TVIVideoFormat *startFormat,
           NSError *error) {
       if (!error) {
+          self.isCameraActive = true;
           NSLog(@"[RNTwilioVideo] Camera successfully started");
           NSLog(@"[RNTwilioVideo] selected format w x h at fps = %d x %d at %lu", startFormat.dimensions.width, startFormat.dimensions.height, (unsigned long)startFormat.frameRate);
           for (TVIVideoView *renderer in self.localVideoTrack.renderers) {
@@ -262,8 +279,12 @@ RCT_EXPORT_METHOD(startLocalVideo) {
               }
           }
           [self sendEventCheckingListenerWithName:cameraDidStart body:nil];
+
       } else {
         NSLog(@"[RNTwilioVideo] Error starting capture %@", error);
+      }
+      if (onComplete != nil) {
+          onComplete(error);
       }
   }];
 }
@@ -277,6 +298,7 @@ RCT_EXPORT_METHOD(stopLocalVideo:(RCTPromiseResolveBlock)resolve rejecter:(RCTPr
         NSLog(@"[RNTwilioVideo] Stopping camera via stopLocalVideo");
         [self.camera stopCaptureWithCompletion:^(NSError *error) {
             if (!error) {
+                self.isCameraActive = false;
                 NSLog(@"[RNTwilioVideo] Camera stopped via stopLocalVideo");
                 resolve(@(true));
             } else {
@@ -324,6 +346,81 @@ RCT_REMAP_METHOD(setLocalAudioEnabled, enabled:(BOOL)enabled setLocalAudioEnable
   resolve(@(enabled));
 }
 
+// steps to flip camera
+// 1. unpublish local video
+// 2. disable local video. this includes disabling the localVideoTrack for twilio and the phone camera
+// 3. re-create the local video track with the new name
+// 4. enable local video. this includes enabling the localVideoTrack for twilio and the phone camera
+// 5. publish video
+RCT_EXPORT_METHOD(streemFlipCamera:(NSString *)localVideoTrackName cameraType:(NSString *)cameraType resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"[RNTwilioVideo] Starting streem flip camera");
+    
+    // step 1
+    [self unpublishLocalVideo];
+    NSLog(@"[RNTwilioVideo] Unpublished video");
+    
+    LocalBlock doFlip = ^() {
+        // step 2 continued
+        [self removeLocalView:self.videoView];
+        self.localVideoTrack = nil;
+        NSLog(@"[RNTwilioVideo] Local video disabled");
+        
+        // step 3
+        [self setLocalVideoTrackName:localVideoTrackName];
+        [self initLocalVideoTrack];
+        [self addLocalView:self.videoView];
+        NSLog(@"[RNTwilioVideo] New video track created");
+        
+        // step 4
+        if (self.isCameraActive) {
+            [self _setLocalVideoEnabled:true cameraType:cameraType onComplete:^(NSError* error) {
+                if (error) {
+                    NSLog(@"[RNTwilioVideo] Error setting local video to true in complete block :(");
+                    reject(@"", @"", error);
+                }
+                else {
+                    NSLog(@"[RNTwilioVideo] Local video enabled");
+                    
+                    // step 5
+                    [self publishLocalVideo];
+                    NSLog(@"[RNTwilioVideo] Published video");
+                    
+                    resolve(nil);
+                }
+            }];
+        }
+        // cam is already off, just publish to finish
+        else {
+            // step 5
+            [self publishLocalVideo];
+            NSLog(@"[RNTwilioVideo] Published video");
+            
+            resolve(nil);
+        }
+
+    };
+
+    
+    // step 2
+    if (self.isCameraActive) {
+        [self _setLocalVideoEnabled:false cameraType:cameraType onComplete:^(NSError* error) {
+            if (error) {
+                NSLog(@"[RNTwilioVideo] Error setting local video to false in complete block :(");
+                reject(@"", @"", error);
+            }
+            else {
+                NSLog(@"[RNTwilioVideo] Success setting local video to false in complete block!!");
+                
+                doFlip();
+            }
+        }];
+    }
+    else {
+        doFlip();
+    }
+}
+
 
 // set a default for setting local video enabled
 - (bool)_setLocalVideoEnabled:(bool)enabled {
@@ -331,15 +428,22 @@ RCT_REMAP_METHOD(setLocalAudioEnabled, enabled:(BOOL)enabled setLocalAudioEnable
 }
 
 - (bool)_setLocalVideoEnabled:(bool)enabled cameraType:(NSString *)cameraType {
+    return [self _setLocalVideoEnabled:enabled cameraType:cameraType onComplete:nil];
+}
+
+- (bool)_setLocalVideoEnabled:(bool)enabled cameraType:(NSString *)cameraType onComplete:(CompleteBlock)onComplete {
   if (self.localVideoTrack != nil) {
       NSLog(@"[RNTwilioVideo] Setting local video %@", enabled ? @"enabled" : @"disabled");
 
-      [self.localVideoTrack setEnabled:enabled];
+      // NOTE: had to hardcode this to true or else it would crash during streemFlipCamera :/
+      [self.localVideoTrack setEnabled:true];
+      
+      NSLog(@"[RNTwilioVideo] disabled local video track");
       if (self.camera != nil) {
           if (enabled) {
-            [self startCameraCapture:cameraType];
+            [self startCameraCapture:cameraType onComplete:onComplete];
           } else {
-            [self clearCameraInstance];
+              [self clearCameraInstance:onComplete];
           }
           return enabled;
       } else {
@@ -617,13 +721,23 @@ RCT_EXPORT_METHOD(disconnect) {
 }
 
 - (void)clearCameraInstance {
+    [self clearCameraInstance:nil];
+}
+
+- (void)clearCameraInstance:(CompleteBlock)onComplete {
+    NSLog(@"[RNTwilioVideo] clearing camera instance");
+    
     // We are done with camera
     if (self.camera) {
         [self.camera stopCaptureWithCompletion:^(NSError *error) {
             if (!error) {
                 NSLog(@"[RNTwilioVideo] Camera stopped");
+
             } else {
                 NSLog(@"[RNTwilioVideo] Error stopping camera: %@", error);
+            }
+            if (onComplete != nil) {
+                onComplete(error);
             }
         }];
     }
