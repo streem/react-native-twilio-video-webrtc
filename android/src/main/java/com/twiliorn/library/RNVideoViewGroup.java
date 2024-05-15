@@ -134,6 +134,12 @@ public class RNVideoViewGroup extends ViewGroup {
             r = l + displaySize.x;
             b = t + displaySize.y;
         }
+        if (changed) {
+            // adds rounding for android native view
+            GradientDrawable drawable = new GradientDrawable();
+            drawable.setCornerRadius(12f);
+            setBackground(drawable);
+        }
         surfaceViewRenderer.layout(l, t, r, b);
     }
 }
