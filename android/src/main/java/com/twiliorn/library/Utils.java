@@ -105,7 +105,7 @@ public final class Utils {
             Bitmap sourceBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
             Bitmap rotatedBitmap = rotateBitmap(sourceBitmap, rotation);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            // rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
             sourceBitmap.recycle();
             rotatedBitmap.recycle();
             return byteArrayOutputStream.toByteArray();
