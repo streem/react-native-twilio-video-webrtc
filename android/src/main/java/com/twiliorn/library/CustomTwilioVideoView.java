@@ -135,7 +135,6 @@ public class CustomTwilioVideoView extends View implements DefaultLifecycleObser
     private String cameraType = "";
     private boolean enableH264Codec = false;
     private String videoTrackName = "camera";
-    private static final FrameCapturerVideoSink frameCapturerVideoSink = new FrameCapturerVideoSink();
 
     @Retention(RetentionPolicy.SOURCE)
     @StringDef({Events.ON_CAMERA_SWITCHED,
@@ -214,7 +213,7 @@ public class CustomTwilioVideoView extends View implements DefaultLifecycleObser
     private static PatchedVideoView thumbnailVideoView;
     private static LocalVideoTrack localVideoTrack;
 
-    private static CameraCapturer cameraCapturer;
+    private static FrameCaptureCameraCapturer cameraCapturer;
     private LocalAudioTrack localAudioTrack;
     private AudioManager audioManager;
     private int previousAudioMode;
@@ -279,11 +278,11 @@ public class CustomTwilioVideoView extends View implements DefaultLifecycleObser
         return new VideoFormat(VideoDimensions.HD_720P_VIDEO_DIMENSIONS, 30);
     }
 
-    private CameraCapturer createCameraCaputer(Context context, String cameraId) {
-        CameraCapturer newCameraCapturer = null;
+    private FrameCaptureCameraCapturer createCameraCapturer(Context context, String cameraId) {
+        FrameCaptureCameraCapturer newCameraCapturer = null;
         try {
             Log.i(TAG, "Creating new CameraCapturer, cameraId: " + cameraId);
-            newCameraCapturer = new CameraCapturer(
+            newCameraCapturer = new FrameCaptureCameraCapturer(
                     context,
                     cameraId,
                     new CameraCapturer.Listener() {
@@ -340,17 +339,17 @@ public class CustomTwilioVideoView extends View implements DefaultLifecycleObser
 
         if (cameraType.equals(CustomTwilioVideoView.FRONT_CAMERA_TYPE)) {
             if (frontFacingDevice != null) {
-                cameraCapturer = this.createCameraCaputer(getContext(), frontFacingDevice);
+                cameraCapturer = this.createCameraCapturer(getContext(), frontFacingDevice);
             } else {
                 // IF the camera is unavailable try the other camera
-                cameraCapturer = this.createCameraCaputer(getContext(), backFacingDevice);
+                cameraCapturer = this.createCameraCapturer(getContext(), backFacingDevice);
             }
         } else {
             if (backFacingDevice != null) {
-                cameraCapturer = this.createCameraCaputer(getContext(), backFacingDevice);
+                cameraCapturer = this.createCameraCapturer(getContext(), backFacingDevice);
             } else {
                 // IF the camera is unavailable try the other camera
-                cameraCapturer = this.createCameraCaputer(getContext(), frontFacingDevice);
+                cameraCapturer = this.createCameraCapturer(getContext(), frontFacingDevice);
             }
         }
 
@@ -940,7 +939,7 @@ public class CustomTwilioVideoView extends View implements DefaultLifecycleObser
     }
 
     public void captureFrame(String filename) {
-        frameCapturerVideoSink.captureFrame(filename);
+        cameraCapturer.captureFrame(filename);
     }
 
     private void convertBaseTrackStats(BaseTrackStats bs, WritableMap result) {
@@ -1482,8 +1481,7 @@ public class CustomTwilioVideoView extends View implements DefaultLifecycleObser
     private static void setupLocalVideoTrack(PatchedVideoView view) {
         if (localVideoTrack != null) {
             localVideoTrack.addSink(view);
-            frameCapturerVideoSink.setContext((ReactContext) view.getContext());
-            localVideoTrack.addSink(frameCapturerVideoSink);
+            cameraCapturer.setContext((ReactContext) view.getContext());
         }
     }
 
