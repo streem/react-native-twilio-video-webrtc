@@ -11,7 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 
-import com.twilio.video.VideoView;
+import com.twilio.video.VideoTextureView;
 
 import tvi.webrtc.VideoFrame;
 
@@ -19,7 +19,7 @@ import tvi.webrtc.VideoFrame;
  * VideoView that notifies Listener of the first frame rendered and the first frame after a reset
  * request.
  */
-public class PatchedVideoView extends VideoView {
+public class PatchedVideoView extends VideoTextureView {
 
     private boolean notifyFrameRendered = false;
     private Listener listener;
