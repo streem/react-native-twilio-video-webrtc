@@ -7,7 +7,6 @@
 package com.twiliorn.library;
 
 import android.graphics.Point;
-import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +26,7 @@ import java.lang.annotation.RetentionPolicy;
 import static com.twiliorn.library.RNVideoViewGroup.Events.ON_FRAME_DIMENSIONS_CHANGED;
 
 public class RNVideoViewGroup extends ViewGroup {
-    private PatchedVideoView surfaceViewRenderer = null;
+    private PatchedVideoView textureViewRenderer = null;
     private int videoWidth = 0;
     private int videoHeight = 0;
     private final Object layoutSync = new Object();
@@ -48,16 +47,11 @@ public class RNVideoViewGroup extends ViewGroup {
     public RNVideoViewGroup(ThemedReactContext themedReactContext) {
         super(themedReactContext);
         this.eventEmitter = themedReactContext.getJSModule(RCTEventEmitter.class);
-        surfaceViewRenderer = new PatchedVideoView(themedReactContext);
-        surfaceViewRenderer.setVideoScaleType(VideoScaleType.ASPECT_FILL);
+        textureViewRenderer = new PatchedVideoView(themedReactContext);
+        textureViewRenderer.setVideoScaleType(VideoScaleType.ASPECT_FILL);
 
-        // adds rounding for android native view
-        GradientDrawable drawable = new GradientDrawable();
-        drawable.setCornerRadius(12f);
-        setBackground(drawable);
-
-        addView(surfaceViewRenderer);
-        surfaceViewRenderer.setListener(
+        addView(textureViewRenderer);
+        textureViewRenderer.setListener(
                 new RendererCommon.RendererEvents() {
                     @Override
                     public void onFirstFrameRendered() {
@@ -88,8 +82,8 @@ public class RNVideoViewGroup extends ViewGroup {
         );
     }
 
-    public PatchedVideoView getSurfaceViewRenderer() {
-        return surfaceViewRenderer;
+    public PatchedVideoView getTextureViewRenderer() {
+        return textureViewRenderer;
     }
 
     public void setScalingType(RendererCommon.ScalingType scalingType) {
@@ -134,6 +128,6 @@ public class RNVideoViewGroup extends ViewGroup {
             r = l + displaySize.x;
             b = t + displaySize.y;
         }
-        surfaceViewRenderer.layout(l, t, r, b);
+        textureViewRenderer.layout(l, t, r, b);
     }
 }

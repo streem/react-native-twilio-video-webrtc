@@ -47,12 +47,7 @@ public class TwilioRemotePreviewManager extends SimpleViewManager<TwilioRemotePr
         Log.i("CustomTwilioVideoView", "Initialize Twilio REMOTE");
         Log.i("CustomTwilioVideoView", trackSid);
         myTrackSid = trackSid;
-        CustomTwilioVideoView.registerPrimaryVideoView(view.getSurfaceViewRenderer(), trackSid);
-    }
-
-    @ReactProp(name = "applyZOrder", defaultBoolean = false)
-    public void setApplyZOrder(TwilioRemotePreview view, boolean applyZOrder) {
-      view.applyZOrder(applyZOrder);
+        CustomTwilioVideoView.registerPrimaryVideoView(view.getTextureViewRenderer(), trackSid);
     }
 
     @Override
