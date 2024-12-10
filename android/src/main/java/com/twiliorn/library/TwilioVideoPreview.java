@@ -18,8 +18,4 @@ public class TwilioVideoPreview extends RNVideoViewGroup {
         this.isRemote = false;
         CustomTwilioVideoView.registerThumbnailVideoView(this.getTextureViewRenderer());
     }
-
-    public void applyZOrder(boolean applyZOrder) {
-        this.getTextureViewRenderer().applyZOrder(applyZOrder);
-    }
 }
