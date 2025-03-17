@@ -60,6 +60,7 @@ declare module 'react-native-twilio-video-webrtc' {
 
   export type RoomErrorEventArgs = RoomEventCommonArgs & {
     error: any;
+    errorCode: string,
   };
 
   type RoomEventArgs = RoomEventCommonArgs & {

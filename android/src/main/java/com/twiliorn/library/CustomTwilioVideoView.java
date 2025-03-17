@@ -357,6 +357,7 @@ public class CustomTwilioVideoView extends View implements DefaultLifecycleObser
         if (cameraCapturer == null) {
             WritableMap event = new WritableNativeMap();
             event.putString("error", "No camera is supported on this device");
+            event.putString("errorCode", "unknown");
             pushEvent(CustomTwilioVideoView.this, ON_CONNECT_FAILURE, event);
             return false;
         }
@@ -1095,6 +1096,7 @@ public class CustomTwilioVideoView extends View implements DefaultLifecycleObser
                 event.putString("roomName", room.getName());
                 event.putString("roomSid", room.getSid());
                 event.putString("error", e.getMessage());
+                event.putString("errorCode", String.valueOf(e.getCode()));
                 pushEvent(CustomTwilioVideoView.this, ON_CONNECT_FAILURE, event);
             }
 
@@ -1125,6 +1127,7 @@ public class CustomTwilioVideoView extends View implements DefaultLifecycleObser
                 event.putString("roomSid", room.getSid());
                 if (e != null) {
                     event.putString("error", e.getMessage());
+                    event.putString("errorCode", String.valueOf(e.getCode()));
                 }
                 pushEvent(CustomTwilioVideoView.this, ON_DISCONNECTED, event);
 
